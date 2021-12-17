@@ -1,0 +1,16 @@
+import kong_pkg::*;
+
+module rope_mux(
+	parameter N = 10,
+	
+	output logic drawingRequest,
+	output logic[7:0] RGBOut,
+	
+	input logic clk,
+	input logic resetN,
+	input logic startOfFrame,
+	
+	input location pixelX,
+	input location pixelY
+	
+	

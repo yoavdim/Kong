@@ -1,0 +1,65 @@
+
+// game controller dudy Febriary 2020
+// (c) Technion IIT, Department of Electrical Engineering 2021 
+//updated --Eyal Lev 2021
+
+
+module	game_controller_all	(	
+			input	logic	clk,
+			input	logic	resetN,
+			input	logic	startOfFrame,  // short pulse every start of frame 30Hz 
+			input	logic	drawing_request_Ball,
+			input	logic	drawing_request_1,
+			input logic drawing_request_2, // digit
+       // add the box here 
+			
+			output logic collision, // active in case of collision between two objects
+			output logic digitCollision,
+			output logic SingleHitPulse, // critical code, generating A single pulse in a frame 
+			output logic SingleHitDigit
+);
+
+// drawing_request_Ball   -->  smiley
+// drawing_request_1      -->  brackets
+// drawing_request_2      -->  number/box 
+
+assign digitCollision = drawing_request_Ball &&  drawing_request_2;
+assign collision = ( drawing_request_Ball &&  (drawing_request_1 || drawing_request_2) );// any collision 
+						 						
+						
+// add colision between number and Smiley
+
+
+logic flag, flagDigit ; // a semaphore to set the output only once per frame / regardless of the number of collisions 
+
+always_ff@(posedge clk or negedge resetN)
+begin
+	if(!resetN)
+	begin 
+		flag	<= 1'b0;
+		flagDigit <= 1'b0;
+		SingleHitPulse <= 1'b0 ; 
+		SingleHitDigit <= 1'b0 ;
+	end 
+	else begin 
+
+			SingleHitPulse <= 1'b0 ; // default 
+			if(startOfFrame) 
+				flag = 1'b0 ; // reset for next time 
+				
+//		change the section below  to collision between number and smiley
+
+
+		if ( collision  && (flag == 1'b0)) begin 
+			flag	<= 1'b1; // to enter only once 
+			SingleHitPulse <= 1'b1 ; 
+		end ; 
+		
+		if ( digitCollision && (flagDigit == 1'b0)) begin 
+			flagDigit	<= 1'b1; // to enter only once 
+			SingleHitDigit <= 1'b1 ;
+		end ; 
+	end 
+end
+
+endmodule

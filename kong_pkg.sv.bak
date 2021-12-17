@@ -1,0 +1,20 @@
+
+package kong_pkg;
+	typedef enum {	KONG_STAND, 
+					KONG_WALK_LEFT, 
+					KONG_WALK_RIGHT,
+					KONG_JUMP_LEFT,  // todo, different for rise & fall
+					KONG_JUMP_RIGHT,
+					KONG_CLIMB_LEFT,
+					KONG_CLIMB_RIGHT} kong_icon;
+	
+	typedef enum {	KONG_IS_STANDING,
+					KONG_IS_CLIMBING,
+					KONG_IS_JUMPING,
+					KONG_IS_JUMPING_IN_PLATFORM,
+					KONG_IS_JUMPING_FROM_ROPE} kong_state;
+					
+	typedef enum {	KONG_LOOK_RIGHT, KONG_LOOK_LEFT } kong_direction;
+	
+	typedef logic signed [10:0] location;
+endpackage

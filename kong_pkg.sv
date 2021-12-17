@@ -37,8 +37,8 @@ package kong_pkg;
 	parameter location SCREEN_WIDTH = 10'd640;
 	parameter location SCREEN_HIGHT = 10'd480;
 	
-	parameter location KONG_WIDTH = 10'd64; // update when final
-	parameter location KONG_HIGHT = 10'd32;
+	parameter location KONG_WIDTH = 10'd32; // update when final (written for climb image, not including transperency)
+	parameter location KONG_HIGHT = 10'd64;
 	parameter location ROPE_WIDTH = 10'd8 ;
 	
 	
