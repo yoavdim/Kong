@@ -8,6 +8,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 
 	input logic collision_rope,
 	input logic collision_platform,
+	input logic collision_border,
 	input logic [3:0] HitEdgeCode,   // Left-Top-Right-Bottom
 
 	// keypad:
@@ -37,6 +38,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 	// state, updated on startOfFrame
 	kong_state curr_state, next_state;
 	kong_direction curr_direction, next_direction;
+	logic moved;
 
 	int speed_x, next_speed_x;
 	int speed_y, next_speed_y;
@@ -46,10 +48,12 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 	// in-frame state:
 	logic collided_rope;
 	logic collided_platform;
+	logic collided_border;
 	logic asked_left, asked_up, asked_right, asked_down, asked_jump;
 	logic move_left, move_up, move_right, move_down, move_jump;
 	logic [3:0] hit_rope; // note: all bits can be active, from different pixels
 	logic [3:0] hit_platform;
+	logic [3:0] hit_border;
 
 	assign move_down  = asked_down  & !asked_up       & !asked_jump;
 	assign move_up    = asked_up    & !asked_down     & !asked_jump;
@@ -65,18 +69,23 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 		if (!resetN) begin
 			collided_rope <= '0;
 			collided_platform <= '0;
+			collided_border <= '0;
 			{asked_up, asked_down, asked_right, asked_left, asked_jump} <= '0;
 			hit_rope <= 4'b0;
 			hit_platform <= 4'b0;
+			hit_border <= 4'b0;
 		end else if (startOfFrame) begin
 			collided_rope <= '0;
 			collided_platform <= '0;
+			collided_border <= '0;
 			{asked_up, asked_down, asked_right, asked_left, asked_jump} <= '0;
 			hit_rope <= 4'b0;
 			hit_platform <= 4'b0;
+			hit_border <= 4'b0;
 		end else begin
 			collided_rope <= collided_rope | collision_rope;
 			collided_platform <= collided_platform | collision_platform;
+			collided_border <= collided_border | collision_border;
 			asked_up <= asked_up | ask_move_up;
 			asked_down <= asked_down | ask_move_down;
 			asked_right <= asked_right | ask_move_right;
@@ -90,12 +99,17 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 				hit_platform <= hit_platform | HitEdgeCode;
 			else
 				hit_platform <= hit_platform;
+			if (collision_border)
+				hit_border <= hit_border | HitEdgeCode; // bitwise
+			else
+				hit_border <= hit_border;
 		end
 	end
 
 	// each-frame logic:
 	always_ff @(posedge clk or negedge resetN) begin
 		if (!resetN) begin // game reset
+			moved <= '0;
 			speed_x <= '0;
 			speed_y <= '0;
 			x <= default_X * FIXED_POINT_MULTIPLIER;
@@ -104,6 +118,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 			curr_direction <= KONG_LOOK_RIGHT; // todo: change to middle?
 
 		end else if (startOfFrame) begin // todo: will it happen on the same clock of the reset?
+			moved <= move_down || move_up || move_right || move_left || move_jump;
 			curr_direction <= next_direction;
 			curr_state <= next_state;
 			x <= next_x;
@@ -164,7 +179,8 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 								next_x = x + direction_sign(curr_direction) * KONG_WIDTH;
 								next_direction = KONG_LOOK_RIGHT;
 							end
-							else if (move_right) begin
+							else if (move_right && ! moved) begin
+								next_direction = KONG_LOOK_RIGHT;
 								next_state = KONG_IS_JUMPING_FROM_ROPE;
 								next_speed_y = JUMP_SPEED;
 								next_speed_x = direction_sign(next_direction) * ABS_X_SPEED;
@@ -174,7 +190,8 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 								next_x = x + direction_sign(curr_direction) * KONG_WIDTH;
 								next_direction = KONG_LOOK_LEFT;
 							end
-							else if (move_left) begin
+							else if (move_left && ! moved) begin
+								next_direction = KONG_LOOK_RIGHT;
 								next_state = KONG_IS_JUMPING_FROM_ROPE;
 								next_speed_y = JUMP_SPEED;
 								next_speed_x = direction_sign(next_direction) * ABS_X_SPEED;
@@ -233,7 +250,11 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 				end
 			end
 		endcase
-		// todo: add boundry collision code here
+		// boundry collision code here
+		if (collided_border) begin
+			next_speed_x = 0;
+			next_x = x + ((x > (SCREEN_WIDTH/2)*FIXED_POINT_MULTIPLIER) ? -ABS_X_SPEED : ABS_X_SPEED);
+		end
 	end
 
 	// select icon

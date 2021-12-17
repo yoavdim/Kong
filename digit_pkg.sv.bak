@@ -1,7 +1,7 @@
 
 package digit_pkg;
 
-parameter bit [0:15] [0:31] [0:15] number_bitmap  = {
+const bit [0:15] [0:31] [0:15] number_bitmap  = {
 
 
 {16'b	0000001111100000,
