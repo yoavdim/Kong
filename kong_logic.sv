@@ -18,6 +18,8 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 	input logic ask_move_down,
 	input logic ask_move_jump,
 
+	input location width,
+
 	// outputs will be updated on startOfFrame
 	output kong_icon icon,
 	output location topLeftX, // output the top left corner
@@ -176,7 +178,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 					end else if (move_left | move_right) begin
 						if (curr_direction == KONG_LOOK_LEFT) begin
 							if (move_left) begin
-								next_x = x + direction_sign(curr_direction) * KONG_WIDTH;
+								next_x = x + direction_sign(curr_direction) * KONG_HIGHT;
 								next_direction = KONG_LOOK_RIGHT;
 							end
 							else if (move_right && ! moved) begin
@@ -187,7 +189,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 							end
 						end else begin // look right = figure left to the rope
 							if (move_right) begin
-								next_x = x + direction_sign(curr_direction) * KONG_WIDTH;
+								next_x = x + direction_sign(curr_direction) * KONG_HIGHT;
 								next_direction = KONG_LOOK_LEFT;
 							end
 							else if (move_left && ! moved) begin
@@ -217,7 +219,11 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 					next_speed_y = 0;
 					next_x = x;
 					next_y = y;
-					next_direction = hit_rope[E_LEFT] ? KONG_LOOK_LEFT : KONG_LOOK_RIGHT;
+					if (hit_rope[E_LEFT])
+						next_direction = KONG_LOOK_LEFT;
+					else if (hit_rope[E_RIGHT])
+						next_direction = KONG_LOOK_RIGHT;
+					// else keep your direction
 				end else if (collided_platform) begin // from down below
 					next_state = KONG_IS_JUMPING_IN_PLATFORM;
 				end
@@ -252,8 +258,13 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 		endcase
 		// boundry collision code here
 		if (collided_border) begin
-			next_speed_x = 0;
-			next_x = x + ((x > (SCREEN_WIDTH/2)*FIXED_POINT_MULTIPLIER) ? -ABS_X_SPEED : ABS_X_SPEED);
+			if ((next_x > x) && (x > (SCREEN_WIDTH/2)*FIXED_POINT_MULTIPLIER)) begin
+				next_speed_x = 0;
+				next_x = x - ABS_X_SPEED;
+			end else if ((next_x < x) && (x < (SCREEN_WIDTH/2)*FIXED_POINT_MULTIPLIER)) begin
+				next_speed_x = 0;
+				next_x = x + ABS_X_SPEED;
+			end
 		end
 	end
 

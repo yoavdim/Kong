@@ -92,7 +92,7 @@ begin
 		RGBout <= TRANSPARENT_ENCODING ; // default
 
 		if ((InsideRectangle == 1'b1 )		& 	// only if inside the external bracket
-		   (MazeBiMapMask[offsetY[8:5] ][offsetX[8:5]] == 1'b1 )) // take bits 5,6,7,8,9,10 from address to select  position in the maze
+		   (MazeBiMapMask[offsetY[9:5] ][offsetX[9:5]] == 1'b1 )) // take bits 5,6,7,8,9,10 from address to select  position in the maze
 						RGBout <= object_colors[offsetY[4:0]][offsetX[4:0]] ;
 		end
 end
