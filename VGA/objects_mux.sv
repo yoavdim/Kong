@@ -12,17 +12,20 @@ module	objects_mux	(
 					input		logic	resetN,
 
 					input		logic kongDrawingRequest, // two set of inputs per unit
-					input		logic [7:0] kongRGB, 
-                    
-                    input       logic targetDrawingRequest, 
-                    input		logic [7:0] targetRGB, 
-			   
-					input       logic ropeDrawingRequest,
+					input		logic [7:0] kongRGB,   
+                            
+					input    logic targetDrawingRequest, 
+               input		logic [7:0] targetRGB,   
+									
+					input    logic ropeDrawingRequest,
 					input		logic [7:0] ropeRGB, 
                     
-                    input		logic platformDrawingRequest,
-                    input 	    logic [7:0] platformRGB,   
-                    
+				   input		logic platformDrawingRequest,
+				   input 	logic [7:0] platformRGB, 
+					
+					input		logic scoreDrawingRequest,
+				   input	   logic [7:0] scoreRGB,	
+				 
 					input		logic [7:0] backGroundRGB, 
 		  
 				    output	    logic [7:0] RGBOut
@@ -40,8 +43,10 @@ begin
 			RGBOut <= targetRGB;
 		else if (ropeDrawingRequest == 1'b1)
 			RGBOut <= ropeRGB;
-        else if (platformDrawingRequest == 1'b1)
+      else if (platformDrawingRequest == 1'b1)
            RGBOut <= platformRGB;
+	   else if (scoreDrawingRequest == 1'b1)
+           RGBOut <= scoreRGB;
 		else 
 			RGBOut <= backGroundRGB ; // last priority 
 	end

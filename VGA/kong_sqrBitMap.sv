@@ -136,8 +136,8 @@ always_comb begin
     end
 end
 
-assign fliped_rotated_x = flip ? (KONG_WIDTH - rotated_x) : rotated_x;
-assign fliped_rotated_y = rotated_y - (BORDERS-REAL_HIGHT);
+assign fliped_rotated_x = flip ? (KONG_WIDTH -1 - rotated_x) : rotated_x;
+assign fliped_rotated_y = rotated_y - (BORDERS -1 -REAL_HIGHT);
  // pipeline (ff) to get the pixel color from the array
 //////////--------------------------------------------------------------------------------------------------------------=
 always_ff@(posedge clk or negedge resetN)

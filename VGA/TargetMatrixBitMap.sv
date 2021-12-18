@@ -103,7 +103,7 @@ assign inner_offset_y = offsetY[4:0];
 assign digit_offset_x = inner_offset_x - 5'd8;
 assign digit_offset_y = inner_offset_y;
 assign inside_digit = (inner_offset_x < 5'd24) && (inner_offset_x >= 5'd8) && InsideRectangle;
-assign rtValue = MazeBiMapMask[offsetY[8:5] ][offsetX[8:5]];
+assign rtValue = MazeBiMapMask[offsetY[9:5] ][offsetX[9:5]];
 
 //==----------------------------------------------------------------------------------------------------------------=
 always_ff@(posedge clk or negedge resetN)

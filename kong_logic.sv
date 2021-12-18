@@ -40,7 +40,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 	// state, updated on startOfFrame
 	kong_state curr_state, next_state;
 	kong_direction curr_direction, next_direction;
-	logic moved;
+	logic moved, jumped;
 
 	int speed_x, next_speed_x;
 	int speed_y, next_speed_y;
@@ -112,6 +112,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 	always_ff @(posedge clk or negedge resetN) begin
 		if (!resetN) begin // game reset
 			moved <= '0;
+			jumped <= '0;
 			speed_x <= '0;
 			speed_y <= '0;
 			x <= default_X * FIXED_POINT_MULTIPLIER;
@@ -121,6 +122,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 
 		end else if (startOfFrame) begin // todo: will it happen on the same clock of the reset?
 			moved <= move_down || move_up || move_right || move_left || move_jump;
+			jumped <= curr_state == KONG_IS_JUMPING || curr_state == KONG_IS_JUMPING_IN_PLATFORM || curr_state == KONG_IS_JUMPING_FROM_ROPE;
 			curr_direction <= next_direction;
 			curr_state <= next_state;
 			x <= next_x;
@@ -150,7 +152,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 				next_speed_x = 0;
 				next_speed_y = 0;
 				if (collided_platform) begin // still standing
-					if (move_jump) begin
+					if (move_jump & !jumped) begin
 						next_state = KONG_IS_JUMPING_IN_PLATFORM; // untill all pixels will leave the platform
 						next_speed_y = JUMP_SPEED;
 						next_speed_x = direction_sign(curr_direction) * ABS_X_SPEED;
@@ -159,7 +161,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 						next_speed_x = direction_sign(next_direction) * ABS_X_SPEED;
 					end
 				end else begin // no floor, falling
-					next_state = KONG_IS_JUMPING_IN_PLATFORM; // will ensure 1 cycle of falling?
+					next_state = KONG_IS_JUMPING;
 				end
 			end
 
@@ -167,7 +169,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 				next_speed_x = 0;
 				next_speed_y = 0;
 				if (collided_rope) begin
-					if (move_jump) begin
+					if (move_jump && ! jumped) begin
 						next_state = KONG_IS_JUMPING_FROM_ROPE;
 						// todo: jump backwards
 						// next_direction = curr_direction == KONG_LOOK_LEFT ? KONG_LOOK_LEFT : KONG_LOOK_RIGHT;
@@ -178,10 +180,10 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 					end else if (move_left | move_right) begin
 						if (curr_direction == KONG_LOOK_LEFT) begin
 							if (move_left) begin
-								next_x = x + direction_sign(curr_direction) * KONG_HIGHT;
+								next_x = x + direction_sign(curr_direction) * KONG_WIDTH * (FIXED_POINT_MULTIPLIER*7/8);
 								next_direction = KONG_LOOK_RIGHT;
 							end
-							else if (move_right && ! moved) begin
+							else if (move_right && (!moved) && !jumped) begin
 								next_direction = KONG_LOOK_RIGHT;
 								next_state = KONG_IS_JUMPING_FROM_ROPE;
 								next_speed_y = JUMP_SPEED;
@@ -189,11 +191,11 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 							end
 						end else begin // look right = figure left to the rope
 							if (move_right) begin
-								next_x = x + direction_sign(curr_direction) * KONG_HIGHT;
+								next_x = x + direction_sign(curr_direction) * KONG_WIDTH * (FIXED_POINT_MULTIPLIER*7/8);
 								next_direction = KONG_LOOK_LEFT;
 							end
-							else if (move_left && ! moved) begin
-								next_direction = KONG_LOOK_RIGHT;
+							else if (move_left && (!moved) && !jumped) begin
+								next_direction = KONG_LOOK_LEFT;
 								next_state = KONG_IS_JUMPING_FROM_ROPE;
 								next_speed_y = JUMP_SPEED;
 								next_speed_x = direction_sign(next_direction) * ABS_X_SPEED;
@@ -257,14 +259,12 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 			end
 		endcase
 		// boundry collision code here
-		if (collided_border) begin
-			if ((next_x > x) && (x > (SCREEN_WIDTH/2)*FIXED_POINT_MULTIPLIER)) begin
-				next_speed_x = 0;
-				next_x = x - ABS_X_SPEED;
-			end else if ((next_x < x) && (x < (SCREEN_WIDTH/2)*FIXED_POINT_MULTIPLIER)) begin
-				next_speed_x = 0;
-				next_x = x + ABS_X_SPEED;
-			end
+		if ((next_x > x) && (x >= (SCREEN_WIDTH - KONG_WIDTH)*FIXED_POINT_MULTIPLIER)) begin
+			next_speed_x = 0;
+			next_x = x - 2*ABS_X_SPEED;
+		end else if ((next_x < x) && !(x > 0)) begin
+			next_speed_x = 0;
+			next_x = x + 2*ABS_X_SPEED;
 		end
 	end
 
