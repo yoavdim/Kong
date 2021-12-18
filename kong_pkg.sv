@@ -41,6 +41,8 @@ package kong_pkg;
 	parameter location KONG_HIGHT = 11'd48;
 	parameter location ROPE_WIDTH = 11'd8 ;
 
+	parameter DURATION = 512;
+
 
 
 endpackage

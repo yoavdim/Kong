@@ -28,8 +28,8 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 
 
 	// int is the fixed_point datatype
-	parameter location default_X = 60;
-	parameter location default_Y = 10;
+	parameter location default_X = 11'd90;
+	parameter location default_Y = SCREEN_HIGHT - 11'd75;
 	parameter int MAX_Y_SPEED = 230; // in freefall
 	parameter int ABS_X_SPEED = 80; // walking or jumping
 	parameter int CLIMB_SPEED = 80;
