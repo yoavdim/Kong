@@ -116,6 +116,8 @@ always_comb begin
             flip = '1;
         end
     endcase
+	 rotate = '0; // disable
+	 //flip = '0;
 end
 
 
@@ -137,7 +139,7 @@ always_comb begin
 end
 
 assign fliped_rotated_x = flip ? (KONG_WIDTH -1 - rotated_x) : rotated_x;
-assign fliped_rotated_y = rotated_y - (BORDERS -1 -REAL_HIGHT);
+assign fliped_rotated_y = rotated_y;
  // pipeline (ff) to get the pixel color from the array
 //////////--------------------------------------------------------------------------------------------------------------=
 always_ff@(posedge clk or negedge resetN)
@@ -150,7 +152,7 @@ begin
 		RGBout <= TRANSPARENT_ENCODING ; // default
 		HitEdgeCode <= 4'h0;
 
-		if (InsideRectangle == 1'b1 && (offsetX < width) && (offsetY < hight))
+		if (InsideRectangle == 1'b1)
 		begin // inside an external bracket
 			HitEdgeCode <= hit_colors[offsetY >> 4][offsetX >> 4 ]; // get hitting edge from the colors table
             RGBout <= object_colors[fliped_rotated_y][fliped_rotated_x];

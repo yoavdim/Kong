@@ -169,10 +169,8 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 				next_speed_x = 0;
 				next_speed_y = 0;
 				if (collided_rope) begin
-					if (move_jump && ! jumped) begin
+					if ((move_jump  &&  !moved) && ! jumped) begin //|| ((curr_direction == KONG_LOOK_RIGHT ? move_right : move_left) // uncomment to jump
 						next_state = KONG_IS_JUMPING_FROM_ROPE;
-						// todo: jump backwards
-						// next_direction = curr_direction == KONG_LOOK_LEFT ? KONG_LOOK_LEFT : KONG_LOOK_RIGHT;
 						next_speed_y = JUMP_SPEED;
 						next_speed_x = direction_sign(next_direction) * ABS_X_SPEED;
 					end else if (move_down | move_up) begin
@@ -180,7 +178,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 					end else if (move_left | move_right) begin
 						if (curr_direction == KONG_LOOK_LEFT) begin
 							if (move_left) begin
-								next_x = x + direction_sign(curr_direction) * KONG_WIDTH * (FIXED_POINT_MULTIPLIER*7/8);
+								next_x = x + direction_sign(curr_direction) * KONG_WIDTH * (FIXED_POINT_MULTIPLIER/2);
 								next_direction = KONG_LOOK_RIGHT;
 							end
 							else if (move_right && (!moved) && !jumped) begin
@@ -191,7 +189,7 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 							end
 						end else begin // look right = figure left to the rope
 							if (move_right) begin
-								next_x = x + direction_sign(curr_direction) * KONG_WIDTH * (FIXED_POINT_MULTIPLIER*7/8);
+								next_x = x + direction_sign(curr_direction) * KONG_WIDTH * (FIXED_POINT_MULTIPLIER/2);
 								next_direction = KONG_LOOK_LEFT;
 							end
 							else if (move_left && (!moved) && !jumped) begin
@@ -270,14 +268,15 @@ module kong_logic(  // todo: borders, rope side switching, double jump & cheats 
 
 	// select icon
 	always_comb begin
-		case(curr_state)
-			KONG_IS_STANDING:
-				icon = (curr_direction == KONG_LOOK_RIGHT) ? KONG_WALK_RIGHT : KONG_WALK_LEFT;
-			KONG_IS_CLIMBING:
-				icon = (curr_direction == KONG_LOOK_RIGHT) ? KONG_CLIMB_RIGHT : KONG_CLIMB_LEFT;
-			KONG_IS_JUMPING, KONG_IS_JUMPING_IN_PLATFORM, KONG_IS_JUMPING_FROM_ROPE:
-				icon = (curr_direction == KONG_LOOK_RIGHT) ? KONG_JUMP_RIGHT : KONG_JUMP_LEFT;
-		endcase
+		icon = (curr_direction == KONG_LOOK_RIGHT) ? KONG_WALK_RIGHT : KONG_WALK_LEFT;
+//		case(curr_state)
+//			KONG_IS_STANDING:
+//				icon = (curr_direction == KONG_LOOK_RIGHT) ? KONG_WALK_RIGHT : KONG_WALK_LEFT;
+//			KONG_IS_CLIMBING:
+//				icon = (curr_direction == KONG_LOOK_RIGHT) ? KONG_CLIMB_RIGHT : KONG_CLIMB_LEFT;
+//			KONG_IS_JUMPING, KONG_IS_JUMPING_IN_PLATFORM, KONG_IS_JUMPING_FROM_ROPE:
+//				icon = (curr_direction == KONG_LOOK_RIGHT) ? KONG_JUMP_RIGHT : KONG_JUMP_LEFT;
+//		endcase
 	end
 
 	function int direction_sign(kong_direction d);

@@ -10,6 +10,12 @@
 module	objects_mux	(	 	
 					input		logic	clk,
 					input		logic	resetN,
+					
+					input		logic winDrawingRequest,
+				   input 	logic [7:0] winRGB, 
+					
+					input		logic loseDrawingRequest,
+				   input 	logic [7:0] loseRGB, 
 
 					input		logic kongDrawingRequest, // two set of inputs per unit
 					input		logic [7:0] kongRGB,   
@@ -22,6 +28,9 @@ module	objects_mux	(
                     
 				   input		logic platformDrawingRequest,
 				   input 	logic [7:0] platformRGB, 
+					
+					input		logic lavaDrawingRequest,
+				   input 	logic [7:0] lavaRGB, 
 					
 					input		logic scoreDrawingRequest,
 				   input	   logic [7:0] scoreRGB,	
@@ -37,14 +46,20 @@ begin
 			RGBOut	<= 8'b0;
 	end
 	else begin
-		if (kongDrawingRequest == 1'b1 )   
-			RGBOut <= kongRGB;  //first priority 
+		if (winDrawingRequest == 1'b1 )   
+			RGBOut <= winRGB;   //first priority 
+		else if (loseDrawingRequest == 1'b1 )   
+			RGBOut <= loseRGB;  
+		else if (kongDrawingRequest == 1'b1 )   
+			RGBOut <= kongRGB;  
 		else if (targetDrawingRequest)
 			RGBOut <= targetRGB;
 		else if (ropeDrawingRequest == 1'b1)
 			RGBOut <= ropeRGB;
       else if (platformDrawingRequest == 1'b1)
            RGBOut <= platformRGB;
+		else if (lavaDrawingRequest == 1'b1)
+           RGBOut <= lavaRGB;
 	   else if (scoreDrawingRequest == 1'b1)
            RGBOut <= scoreRGB;
 		else 
